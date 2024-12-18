@@ -1,0 +1,1024 @@
+/*GENERAL Page*/
+.container {
+    max-width: 800px;
+}
+
+/*GENERAL*/
+/* Input and Form Styling */
+/* Form Check Styling */
+
+
+.form-check {
+    display: inline-block;
+    margin-right: 1px;
+    margin-bottom: 10px;
+}
+
+.form-check-label {
+    display: inline-block;
+    padding: 7px 20px;
+    border-radius: 10px;
+    background-color: #fff;
+    color: #333;
+    border: 2px solid #ccc;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    min-width: 150px;
+    text-align: center;
+}
+
+.form-check-label:hover {
+    background-color: #ffffff;
+    border-color: #6a0dad;
+}
+
+/* Hide Radio and Checkbox */
+input[type="radio"],
+input[type="checkbox"] {
+    display: none;
+}
+
+/* Style for Checked State */
+input[type="radio"]:checked + .form-check-label,
+input[type="checkbox"]:checked + .form-check-label {
+    background-color: #f0dbfe;
+    color: #000000;
+    border-color: #6a0dad;
+    box-shadow: 0px 4px 10px #6a0dad33;
+}
+
+/* Additional Checkbox Style for Alternate Background */
+input[type="checkbox"]:checked + .form-check-label {
+    background-color: #f0dbfe;
+    color: #000000;
+    border-color: #6a0dad;
+    box-shadow: 0px 4px 10px #6a0dad33;
+}
+
+/* Apply only to Step 2 page */
+#step2 .form-check {
+    display: flex;
+    flex-direction: column; /* Stack each radio button vertically */
+    align-items: center !important; /* Center-align each radio button */
+    margin: 5px auto; /* Center within the container and add spacing */
+}
+
+/* Style for label with fixed dimensions */
+#step2 .form-check-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center !important; 
+    justify-content: center;
+    width: 280px; /* Adjusted width to fit within the wider card */
+    height: 160px; /* Ensure uniform height inside each card */
+    font-size: 16px;
+    color: #333;
+    font-weight: normal;
+    text-align: center;
+}
+
+
+/* Title styling with extra spacing */
+#step2 .form-check-label h5 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 10px 0; /* Bottom margin for spacing between title and description */
+    color: #333;
+}
+
+/* Description styling */
+#step2 .form-check-label p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+
+/* Hide the actual radio buttons */
+#step2 input[type="radio"] {
+    display: none;
+}
+
+/* Remove dot */
+#step2 input[type="radio"] + .form-check-label::before {
+    display: none;
+}
+
+
+/* Button Styles */
+/* Button Styles */
+.btn {
+    font-size: 1rem;
+    padding: 8px 16px;
+    border-radius: 6px; /* Ensures a fully rounded button */
+}
+
+
+.btn-primary {
+    background-color: #551ec2;
+    border: none;
+}
+
+.btn-secondary {
+    background-color: #b3b6b9;
+    border: none;
+}
+
+.btn-danger {
+    font-size: 1rem;
+    padding: 6px 10px;
+    border-radius: 999px; /* Ensures a fully rounded button */
+    background-color: #ececec; /* Adjust as needed */
+    color: #b0b0b0; /* Adjust icon color */
+    border: none;
+}
+
+.btn-danger:hover {
+    background-color: #f8d7da; /* Light baby pink */
+    color: #ff5c5c; /* Keeping the icon color consistent */
+}
+
+
+
+
+.btn-outline-primary {
+    border-color: #6f3597;
+    color: #6f3597;
+    background-color: transparent;
+}
+
+.btn-outline-primary:hover {
+    background-color: #551ec2;
+    border-color: hwb(260 13% 14%);
+    color: #fff;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #5623bd; /* Keep the same color on hover */
+    opacity: 0.9; /* Optional: Slightly reduce opacity for a subtle effect */
+}
+
+
+/* MISC */
+.progress-bar {
+    background-color: #551ec2;
+    transition: width 0.5s ease;
+}
+/* Remove Spinner Arrows */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+
+
+
+/* step 5&6 */
+.gift-selection-container {
+    margin-top: 20px;
+}
+
+.gift-selection-card,
+.gift-input-form {
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+    margin-top: 10px;
+}
+
+.gift-icon {
+    flex-shrink: 0;
+    background-color: #ececec;
+    border-radius: 50%;
+    padding: 15px;
+    margin-right: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    color: #b0b0b0;
+}
+
+.gift-options {
+    display: flex;
+    gap: 10px;
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.gift-option {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.gift-option:hover {
+    background-color: #ffffff;
+    border-color: #6e17ac;
+}
+
+.gift-input-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex-grow: 1;
+}
+
+.gift-input-field label {
+    font-size: 16px;
+    color: #666;
+    font-weight: bold;
+}
+
+.gift-input-field input {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 16px;
+    width: 100%; /* Full width for better alignment */
+}
+
+.gift-input-field input:hover {
+    border: 2px solid #6e17ac;
+} 
+
+.example-text {
+    color: #888;
+    font-size: 14px;
+    margin-top: 2px;
+}
+
+.delete-icon {
+    flex-shrink: 0;
+    background-color: #ececec;
+    border-radius: 50%;
+    padding: 10px;
+    margin-left: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    color: #b0b0b0;
+    cursor: pointer;
+    transition: color 0.3s, background-color 0.3s;
+}
+
+.delete-icon:hover {
+    color: #ff5c5c;
+    background-color: #f8d7da;
+}
+
+
+.col-1 {
+    display: flex;
+    align-items: center; /* Center-aligns the delete button vertically */
+}
+
+
+
+
+/* step 5
+/* Beneficiary and Charity Card Styling */
+.beneficiary-card, .charity-card {
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+    margin-top: 10px;
+}
+
+.avatar-placeholder,
+.gift-icon,
+.icon-container {
+    width: 50px; /* Ensure width and height are equal */
+    height: 50px;
+    border-radius: 50%; /* This makes the shape circular */
+    overflow: hidden; /* Prevents content overflow if the icon is not perfectly square */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ececec; /* Adjust as needed */
+    color: #b0b0b0; /* Adjust icon color */
+}
+
+/* Icon Styling (adjust if needed) */
+.beneficiary-card .avatar-placeholder, .charity-card .avatar-placeholder {
+    background-color: #ececec;
+    border-radius: 50%;
+    padding: 15px;
+    margin-right: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    color: #b0b0b0;
+}
+
+/* Input and Dropdown Styling */
+.beneficiary-card input, .charity-card input,
+.beneficiary-card select, .charity-card select {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 16px;
+    width: 100%;
+    margin-bottom: -5px;
+}
+
+/* Delete Icon Styling for Beneficiary and Charity Cards to Match Gift Card */
+.beneficiary-card .delete-icon,
+.charity-card .delete-icon {
+    background-color: #ececec; /* Light grey background similar to gift card */
+    color: #b0b0b0; /* Icon color similar to gift card */
+    border-radius: 50%; /* Circular shape */
+    padding: 10px;
+    font-size: 18px;
+    display: flex;
+    align-self: center; /* Center-align the delete icon vertically */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.3s, background-color 0.3s;
+    margin-left: auto; /* Align to the far right */
+    height: 100%; /* Make it span the full height of the row */
+
+}
+
+.beneficiary-card .row,
+.charity-card .row {
+    align-items: center;
+    display: flex;
+}
+
+
+.col-md-6 {
+    margin-bottom: -5px !important; /* Apply globally */
+}
+
+.charity-card .col-md-6 {
+    margin-bottom: 10px !important; /* Override with a different value specifically for .charity-card */
+}
+
+
+
+
+/* Adjust the row padding to reduce spacing issues */
+.beneficiary-card .col-1, 
+.charity-card .col-1 {
+    padding: 0;
+    padding-left: 7px; /* A subtle shift to the right */
+}
+
+
+
+/* Hover Effect */
+.beneficiary-card .delete-icon:hover,
+.charity-card .delete-icon:hover {
+    color: #ff5c5c; /* Slightly red color on hover */
+    background-color: #f8d7da; /* Light red background on hover */
+}
+
+select[name="beneficiaryRelationship"],
+select[name^="specificRelationship"],
+select[name="executorRelationship"] {
+    padding: 8px; /* Adjust padding for better fit */
+    font-size: 16px; /* Adjust font size if necessary */
+    border-radius: 6px; /* Match other input fields if they have rounded corners */
+}
+
+select[name="beneficiaryRelationship"],
+select[name^="specificRelationship"],
+select[name="executorRelationship"] {
+    width: 100%; /* Ensures it takes full width of the container */
+    max-width: 200px; /* Set a maximum width if needed */
+    box-sizing: border-box; /* Ensures padding doesn't affect the overall width */
+}
+
+
+
+
+
+
+/* step 7 */
+/* Overall container styling */
+.residual-item-container {
+    display: flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+    margin-top: 10px;
+}
+
+
+  .total-percentage-input {
+    background-color: #f0f0f0; /* Match container background */
+    color: #28a745; /* Green text color */
+    font-weight: bold;
+    font-size: 1.2em;
+    border: none; /* Remove border */
+    text-align: right;
+    padding: 0;
+    outline: none; /* Remove outline on focus */
+    width: 70px; /* Adjust width as needed */
+  }
+  
+  /* Styling for each residual item */
+  .residual-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 15px; /* Space between icon, name, and input fields */
+  }
+  
+  .icon-container {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #eaf7ed; /* Light green background */
+    color: #28a745;
+    font-size: 20px;
+  }
+  
+  .beneficiary-name, .charity-name {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #333;
+    flex-grow: 1;
+    margin-left: 10px; /* Additional space between icon and name */
+  }
+  
+  /* Input group styling for percentage input */
+  /* Styling for input group in residual estate */
+.input-group {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+  
+  .residual-input {
+    width: 60px; /* Adjust width as needed */
+    text-align: right;
+    font-size: 1em;
+    font-weight: bold;
+    border: none;
+    outline: none;
+    padding: 4px;
+    color: #333;
+    background: transparent;
+  }
+  
+  .percent-sign {
+    font-size: 1em;
+    font-weight: bold;
+    color: #666;
+    margin-left: 8px;
+  }
+  
+  /* Total Container Styling for Proper Vertical Alignment */
+.residual-total-container {
+    display: flex;
+    align-items: center; /* Center items vertically */
+    justify-content: space-between; /* Space items to the left and right */
+    padding: 15px 20px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 1.1em;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 100%;
+    margin: auto;
+    margin-top: 10px;
+}
+
+/* Style for TOTAL label to ensure it aligns with percentage */
+.residual-total-container label {
+    color: #666;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5; /* Adjusts line height to align vertically */
+}
+
+/* Styling for percentage display */
+.total-percentage-input {
+    color: #28a745;
+    font-size: 1.2em;
+    font-weight: bold;
+    border: none;
+    background-color: transparent;
+    text-align: right;
+    padding: 0;
+    margin: 0;
+    width: 70px; /* Adjust width as needed */
+    outline: none;
+    line-height: 1.5; /* Matches line-height of label for alignment */
+}
+
+  /* Error message container */
+  .error-container {
+    display: flex;
+    align-items: center;
+    background-color: #fce8e6; /* Light red background to indicate an error */
+    color: #d9534f; /* Red text color */
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Card-like shadow */
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+    margin-top: 10px;
+    font-size: 1em;
+    font-weight: 500;
+}
+  
+  /* Warning icon styling */
+  .error-container i {
+    color: #d9534f;
+    font-size: 1.2em;
+    margin-right: 10px;
+  }
+  
+  /* Hide error when not needed */
+  .error-container.hidden {
+    display: none;
+  }
+  
+
+  /* Step 11 */
+/* Modern Input Group */
+.modern-input-group {
+    display: flex;
+    align-items: flex-end;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 5px;
+    padding-left: 10px !important;
+    background-color: hsl(0, 0%, 100%);
+    width: 100%;
+    max-width: 200px;
+    height: 40px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modern-input {
+    border: none;
+    outline: none;
+    font-size: 16px;
+    width: 100%;
+    background: none;
+    padding-left: 10px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+
+}
+
+.modern-input::placeholder {
+    color: #aaa;
+}
+
+.modern-input-group:hover {
+    background-color: #ffffff;
+    border-color: #6a0dad;
+    box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.25);
+}
+
+.modern-input {
+    border: none;
+    outline: none;
+    font-size: 18px;
+    width: 100%;
+    background: none;
+    padding-left: 5px;
+}
+
+/* Currency symbol styling */
+.currency-symbol {
+    font-size: 18px;
+    margin-right: 5px;
+    color: #555;
+}
+
+
+.modern-input::placeholder {
+    color: #aaa;
+    font-size: 16px;
+}
+
+/* Step 14 */
+
+  #step14 .form-check-container {
+    display: flex;
+    justify-content: center; /* Center align the options */
+}
+
+  /* Delivery Option Styling */
+/* Delivery Option Styling */
+#step14 .form-check {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 400px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    margin: 10px auto;
+    text-align: left;
+    box-sizing: border-box;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Styling for the label inside each delivery option */
+#step14 .form-check-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Title and date container */
+#step14 .form-check-label .text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align to the left */
+    flex-grow: 1; /* Take up remaining space */
+}
+
+/* Main title styling */
+#step14 .form-check-label h5 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+}
+
+/* Date styling with consistent alignment */
+#step14 .form-check-label p {
+    font-size: 14px;
+    color: #6e17ac;
+    margin: 0;
+    padding-top: 4px;
+    font-weight: 400;
+}
+
+/* Styling for the price tag (e.g., "FREE", "+£15") */
+#step14 .form-check-label .price {
+    font-size: 14px;
+    color: #6e17ac;
+    background-color: #e0bdfa;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-weight: bold;
+    text-align: center;
+    margin-left: auto; /* Push to the far right */
+}
+/* Responsive layout for smaller screens */
+@media (max-width: 1200px) {
+    #step14 .form-check-container {
+        flex-direction: column; /* Stack items vertically */
+        align-items: center; /* Center items when stacked */
+    }
+
+    #step14 .form-check {
+        width: 100%; /* Full width on smaller screens */
+        max-width: 400px; /* Optional max width for readability */
+    }
+}
+
+  
+
+
+  /* STEP 15 */
+
+.review-card {
+    background: #ffffff;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    margin-bottom: 25px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .summary-box-modern {
+        margin-top: 30px;
+    }
+}
+
+/* Review Page Styling */
+.review-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.review-title {
+    font-size: 2rem;
+    color: #6f3597;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+.review-subtitle {
+    font-size: 1rem;
+    color: #777;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.review-card {
+    background: #ffffff;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    margin-bottom: 25px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+.review-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.review-card-header h5 {
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.review-completed-icon {
+    color: #28a745;
+    font-size: 1.5rem;
+}
+
+.review-card-body {
+    font-size: 1rem;
+    color: #444;
+}
+
+.review-card-body p {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.review-card-footer {
+    text-align: left;
+    margin-top: 10px;
+}
+
+
+
+
+
+/* Info icon and tooltip wrapper */
+.info-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.info-icon {
+    font-size: 20px;
+    color: #f1c40f; /* Matches the screenshot’s color */
+}
+
+.info-tooltip {
+    background-color: #fcf8e3;
+    color: #333;
+    padding: 10px;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    font-size: 0.9em;
+    width: 250px;
+    text-align: center;
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+
+
+/* Question title styling */
+.question-section h5 {
+    text-align: center;
+    margin-top: 20px;
+}
+
+/* Option buttons styling */
+.options label {
+    display: inline-block;
+    margin: 10px 10px;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.options input[type="radio"] {
+    display: none;
+}
+
+.options input[type="radio"]:checked + label {
+    border-color: #3b82f6;
+    background-color: #f0f9ff;
+}
+
+/* Next button styling */
+.btn-next {
+    background-color: #6c63ff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    display: block;
+    margin: 20px auto;
+}
+
+
+/* Payment
+/* General Container Styling */
+/* Secure Payment Section */
+.pay_left .title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+.pay_left .cards {
+    margin-left: 10px;
+}
+
+.field {
+    margin-bottom: 20px;
+}
+.field label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: #333;
+}
+.sec_input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+.cardsmall {
+    width: calc(50% - 10px);
+}
+
+/* Button Styling */
+.sec_submit {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 15px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+.sec_submit:hover {
+    background-color: #0056b3;
+}
+
+/* Order Summary Styling */
+.pay_right .title {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+.row.clear {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f1f1;
+}
+.row.total {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.addcoupon {
+    margin-top: 15px;
+    text-align: center;
+    color: #007bff;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* Coupon Form */
+.coupon {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+.coupon input {
+    width: calc(100% - 50px);
+    display: inline-block;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+.couponapply {
+    display: inline-block;
+    padding: 8px 15px;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Icons and Security Badges */
+.ico_secure_d, .ico_secure_m {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+}
+.detailspay {
+    font-size: 14px;
+    color: #777;
+    margin-top: 15px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .cardsmall {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    .pay_right, .pay_left {
+        margin-bottom: 20px;
+    }
+}
+
+
