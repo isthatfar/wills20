@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Will Questionnaire - Secure, Fast, and Easy Will Creation</title>
+    <meta name="description" content="Create your will online with our secure, step-by-step questionnaire. Fast, legally binding, and tailored for UK residents. Start now!">
+    <meta name="keywords" content="online will creation, will questionnaire, legally binding wills, UK will writing, create a will online">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Online Will Creation - Start Your Secure Will in Minutes">
+    <meta property="og:description" content="Use our step-by-step online questionnaire to create a legally binding will. Simple, secure, and affordable.">
+    <meta property="og:image" content="assets/images/will-preview.jpg">
+    <meta property="og:url" content="https://example.com/quest-ideal.html">
+    <meta property="og:type" content="website">
+    <link rel="canonical" href="https://example.com/quest-ideal.html">
+    
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="questionnaire.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.lineicons.com/3.0/lineicons.css">
+    <script src="https://js.stripe.com/v3/"></script>
+
+
+    <style>
+        .hidden {
+            display: none;
+        }
+
+        .visible {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, setDoc, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+        import { getAuth, signOut, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+    
+
+        const firebaseConfig = {
+        apiKey: "AIzaSyDdR0ZKYGac95o6pqlSw1bwGmNKy_xh3GA",
+        authDomain: "swift-7c667.firebaseapp.com",
+        projectId: "swift-7c667",
+        storageBucket: "swift-7c667.appspot.com",
+        messagingSenderId: "253052443224",
+        appId: "1:253052443224:web:7f106735bfd5bf436cc82d",
+        measurementId: "G-TQMV7C75D3"
+        };
+    
+        // Initialize Firebase app
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+    
+        // Function to collect form data and submit to Firestore
+        async function submitWillData() {
+            try {
+                // Collect general information
+                const firstName = document.getElementById('firstName')?.value || '';
+                const lastName = document.getElementById('lastName')?.value || '';
+                const email = document.getElementById('email')?.value || '';
+                const relationship = document.querySelector('input[name="relationship"]:checked')?.value || '';
+    
+                // Who Needs a Will
+                const whoNeedsWill = document.querySelector('input[name="whoNeedsWill"]:checked')?.value || '';
+    
+                // Collect gifts for beneficiaries and charities
+                const gifts = [];
+    
+                // Beneficiaries data collection
+                document.querySelectorAll('input[name="beneficiaryName"]').forEach((beneficiary, index) => {
+                    const name = beneficiary?.value || '';
+                    const relationship = document.getElementById(`beneficiaryRelationship${index}`)?.value || '';
+                    const address = document.getElementById(`beneficiaryAddress${index}`)?.value || '';
+    
+                    const beneficiaryGifts = [];
+                    document.querySelectorAll(`#giftDetailsBeneficiary${index} > div`).forEach((giftDiv, giftIndex) => {
+                        //get the selected gift form's id
+                        let giftType = giftDiv.querySelector(".gift-selection-card:not(.hidden),.gift-input-form:not(.hidden)")?.id || '';
+                        let giftDetails = '';
+    
+                        //if no form opened then return
+                        if(giftType.includes("giftSelectionCard")){
+                            return;
+                        }
+
+                        if (giftType.includes('cash')) {
+                            giftType = "cash";
+                            giftDetails = document.getElementById(`cashAmountbeneficiary${index}${giftIndex}`)?.value || '';
+                        } else if (giftType.includes('property')) {
+                            giftType = "property";
+                            const propertyAddress = document.getElementById(`propertyAddressbeneficiary${index}${giftIndex}`)?.value || '';
+                            const propertyPercentage = document.getElementById(`propertyPercentagebeneficiary${index}${giftIndex}`)?.value || '';
+                            giftDetails = `${propertyAddress} (Percentage: ${propertyPercentage}%)`;
+                        } else if (giftType.includes('collection')) {
+                            giftType = "collection";
+                            giftDetails = document.getElementById(`collectionDescriptionbeneficiary${index}${giftIndex}`)?.value || '';
+                        } else if (giftType.includes('item')) {
+                            giftType = "item";
+                            giftDetails = document.getElementById(`itemDescriptionbeneficiary${index}${giftIndex}`)?.value || '';
+                        }
+    
+                        beneficiaryGifts.push({ giftType, giftDetails });
+                    });
+    
+                    gifts.push({ type: 'beneficiary', name, relationship, address, beneficiaryGifts });
+                });
+    
+                // Collect gifts for charities
+                document.querySelectorAll('input[name="charityName"]').forEach((charity, index) => {
+                    const name = charity?.value || '';
+                    const address = document.getElementById(`charityAddress${index}`)?.value || '';
+                    
+                    const charityGifts = [];
+                    document.querySelectorAll(`#giftDetailsCharity${index} > div`).forEach((giftDiv, giftIndex) => {
+                        //get the selected gift form's id
+                        let giftType = giftDiv.querySelector(".gift-selection-card:not(.hidden),.gift-input-form:not(.hidden)")?.id || '';
+                        let giftDetails = '';
+    
+                        //if no form opened then return
+                        if(giftType.includes("giftSelectionCard")){
+                            return;
+                        }
+    
+                        if (giftType.includes('cash')) {
+                            giftType = "cash";
+                            giftDetails = document.getElementById(`cashAmountcharity${index}${giftIndex}`)?.value || '';
+                        } else if (giftType.includes('property')) {
+                            giftType = "property";
+                            const propertyAddress = document.getElementById(`propertyAddresscharity${index}${giftIndex}`)?.value || '';
+                            const propertyPercentage = document.getElementById(`propertyPercentagecharity${index}${giftIndex}`)?.value || '';
+                            giftDetails = `${propertyAddress} (Percentage: ${propertyPercentage}%)`;
+                        } else if (giftType.includes('collection')) {
+                            giftType = "collection";
+                            giftDetails = document.getElementById(`collectionDescriptioncharity${index}${giftIndex}`)?.value || '';
+                        } else if (giftType.includes('item')) {
+                            giftType = "item";
+                            giftDetails = document.getElementById(`itemDescriptioncharity${index}${giftIndex}`)?.value || '';
+                        }
+    
+                        charityGifts.push({ giftType, giftDetails });
+                    });
+    
+                    gifts.push({ type: 'charity', name, address, charityGifts });
+                });
+    
+                // Residual Estate
+                const residualEstate = [];
+                document.querySelectorAll('input[name^="beneficiaryPercentage"]').forEach((input, index) => {
+                    residualEstate.push({
+                        beneficiary: document.querySelectorAll('input[name="beneficiaryName"]')[index]?.value || '',
+                        percentage: input?.value || ''
+                    });
+                });
+                document.querySelectorAll('input[name^="charityPercentage"]').forEach((input, index) => {
+                    residualEstate.push({
+                        charity: document.querySelectorAll('input[name="charityName"]')[index]?.value || '',
+                        percentage: input?.value || ''
+                    });
+                });
+    
+                // Contingency Planning
+                const contingencies = [];
+                document.querySelectorAll('input[name="beneficiaryName"]').forEach((beneficiary, index) => {
+                    //get the selected plan
+                    const selectedPlan = document.querySelector(`input[name="contingency${index}"]:checked`)?.value || '';
+
+                    //saving specific person's data if user selects specific plan
+                    if(selectedPlan === "specific"){
+                        let personName = document.querySelector(`input[name="specificFullName${index}"]`)?.value || '';
+                        let personRelationship = document.querySelector(`select[name="specificRelationship${index}"]`)?.value || '';
+                        let personAddress = document.querySelector(`input[name="specificAddress${index}"]`)?.value || '';
+
+                        contingencies.push({
+                            beneficiary: beneficiary?.value || '',
+                            plan: selectedPlan,
+                            specificPerson: {
+                                name: personName,
+                                relationship: personRelationship,
+                                address: personAddress
+                            }
+                        });
+                    } else {
+                        contingencies.push({
+                            beneficiary: beneficiary?.value || '',
+                            plan: selectedPlan
+                        });
+                    }
+                    
+                });
+    
+                // Executors
+                const executors = [];
+                document.querySelectorAll('input[name="executor"]:checked').forEach((executor) => {
+                    if (executor.value === 'someoneElse') {
+                        //saving all other executors data
+                        let otherExecutors = [];
+                        document.querySelectorAll("#additionalExecutorFieldsContainer > div").forEach((otherExecutor,index)=>{
+                            const executorName = otherExecutor.querySelector(`input[name="executorFullName${index}"]`)?.value || '';
+                            const executorRelationship = otherExecutor.querySelector(`select[name="executorRelationship${index}"]`)?.value || '';
+                            const executorAddress = otherExecutor.querySelector(`input[name="executorAddress${index}"]`)?.value || '';
+                            
+                            otherExecutors.push({
+                                name: executorName,
+                                relationship: executorRelationship,
+                                address: executorAddress
+                            })
+                        })
+                        executors.push({
+                            type: 'someoneElse',
+                            OtherExecutors: otherExecutors
+                        });
+                    } else {
+                        executors.push({ type: executor.value });
+                    }
+                });
+    
+                // Children and Guardianship
+                const childrenAndGuardianship = {
+                    hasChildren: document.querySelector('input[name="hasChildren"]:checked')?.value || '',
+                    guardians: []
+                };
+                document.querySelectorAll('input[name^="guardianFullName"]').forEach((guardian, index) => {
+                    childrenAndGuardianship.guardians.push({
+                        name: guardian?.value || '',
+                        relationship: document.querySelector(`select[name="guardianRelationship${index}"]`)?.value || '',
+                        address: document.querySelector(`input[name="guardianAddress${index}"]`)?.value || ''
+                    });
+                });
+    
+                // Pets
+                const pets = {
+                    hasPets: document.querySelector('input[name="hasPets"]:checked')?.value || '',
+                    caretaker: document.querySelector('input[name="petCaretaker"]:checked')?.value || '',
+                    caretakerDetails: {
+                        fullName: document.querySelector('input[name="petCaretakerFullName"]')?.value || '',
+                        relationship: document.querySelector('select[name="petCaretakerRelationship"]')?.value || '',
+                        address: document.querySelector('input[name="petCaretakerAddress"]')?.value || ''
+                    },
+                    leaveMoney: document.querySelector('input[name="leaveMoneyForPets"]:checked')?.value || '',
+                    amount: document.querySelector('input[name="petMoneyAmount"]')?.value || ''
+                };
+    
+                // Digital Assets
+                const digitalAssets = document.querySelector('input[name="allowDigitalAssets"]:checked')?.value || '';
+    
+                // Funeral Plans
+                const funeralPlans = document.querySelector('input[name="funeralPlan"]:checked')?.value || '';
+    
+                // Delivery Method
+                const delivery = document.querySelector('input[name="deliveryMethod"]:checked')?.value || '';
+    
+                // Create the final data object to submit
+                const willData = {
+                    generalInfo: { firstName, lastName, email, relationship },
+                    whoNeedsWill,
+                    gifts,
+                    residualEstate,
+                    contingencies,
+                    executors,
+                    childrenAndGuardianship,
+                    pets,
+                    digitalAssets,
+                    funeralPlans,
+                    delivery,
+                    timestamp: new Date()
+                };
+
+                const docRef = doc(db, 'wills', email);
+
+                // Submit the data to Firestore
+                await setDoc(docRef, willData,{ merge:true });
+
+                console.log("Successfully submitted to Firestore");
+
+               
+                // Reset the form after submission
+                document.querySelector('.submit-will-form').reset();
+            } catch (error) {
+                console.error("Error submitting data to Firestore:", error);
+                alert("Submission failed! Please check the console for errors.");
+            }
+        }
+    
+        document.addEventListener("DOMContentLoaded",async function(){
+            let willData = {};
+            
+            function saveStep1(){
+                willData.location = document.querySelectorAll("#step1 .form-group")[0].querySelector("input:checked")?.value || "";
+                let relationShip = document.querySelectorAll("#step1 .form-group")[1].querySelector("input:checked")?.value || "";
+                willData.generalInfo = {
+                    relationShip
+                }
+
+            }
+
+            function saveStep2(){
+                window.updateWillOptions();
+                willData.whoNeedsWill = document.querySelector("#step2 input:checked")?.value || "";
+
+            }
+
+            function saveStep3(){
+                const firstName = document.getElementById('firstName')?.value || '';
+                const lastName = document.getElementById('lastName')?.value || '';
+                const email = document.getElementById('email')?.value || '';
+                const address1 = document.getElementById('address1')?.value || '';
+                const address2 = document.getElementById('address2')?.value || '';
+                const city = document.getElementById('city')?.value || '';
+                const postcode = document.getElementById('postcode')?.value || '';
+                const relationShip = document.querySelectorAll("#step1 .form-group")[1].querySelector("input:checked")?.value || "";
+
+
+                willData.generalInfo = {
+                    firstName,lastName,relationShip,email,address1,address2,city,postcode
+                }
+
+
+                
+            }
+
+            function saveStep4(){
+                willData.foreignAssets = document.querySelectorAll("#step4 .form-group")[0].querySelector("input:checked")?.value || "";
+                if(willData.foreignAssets === "yes"){
+                    willData.includeForeign = document.querySelectorAll("#step4 .form-group")[1].querySelector("input:checked")?.value || "";
+                }
+
+            }
+
+            function saveStep5(){
+                let gifts = [];
+                document.querySelectorAll('input[name="beneficiaryName"]').forEach((beneficiary, index) => {
+                    const name = beneficiary?.value || '';
+                    const relationship = document.getElementById(`beneficiaryRelationship${index}`)?.value || '';
+                    const address = document.getElementById(`beneficiaryAddress${index}`)?.value || '';
+                    gifts.push({ type: 'beneficiary', name, relationship, address });
+
+                })   
+                
+                document.querySelectorAll('input[name="charityName"]').forEach((charity, index) => {
+                    const name = charity?.value || '';
+                    const address = document.getElementById(`charityAddress${index}`)?.value || '';
+                    gifts.push({ type: 'charity', name, address });
+                })
+                
+                willData.gifts = gifts;
+            }
+
+            function saveStep6(){
+                // Collect gifts for beneficiaries and charities
+                const gifts = [];
+
+                // Beneficiaries data collection
+                document.querySelectorAll('input[name="beneficiaryName"]').forEach((beneficiary, index) => {
+                    const name = beneficiary?.value || '';
+                    const relationship = document.getElementById(`beneficiaryRelationship${index}`)?.value || '';
+                    const address = document.getElementById(`beneficiaryAddress${index}`)?.value || '';
+
+                    const beneficiaryGifts = [];
+                    document.querySelectorAll(`#giftDetailsBeneficiary${index} > div`).forEach((giftDiv, giftIndex) => {
+                        //get the selected gift form's id
+                        let giftType = giftDiv.querySelector(".gift-selection-card:not(.hidden),.gift-input-form:not(.hidden)")?.id || '';
+                        let giftDetails = '';
+
+                        //if no form opened then return
+                        if(giftType.includes("giftSelectionCard")){
+                            return;
+                        }
+
+                        if (giftType.includes('cash')) {
+                            giftType = "cash";
+                            giftDetails = document.getElementById(`cashAmountbeneficiary${index}${giftIndex}`)?.value || '';
+                        } else if (giftType.includes('property')) {
+                            giftType = "property";
+                            const propertyAddress = document.getElementById(`propertyAddressbeneficiary${index}${giftIndex}`)?.value || '';
+                            const propertyPercentage = document.getElementById(`propertyPercentagebeneficiary${index}${giftIndex}`)?.value || '';
+                            giftDetails = `${propertyAddress} (Percentage: ${propertyPercentage}%)`;
+                        } else if (giftType.includes('collection')) {
+                            giftType = "collection";
+                            giftDetails = document.getElementById(`collectionDescriptionbeneficiary${index}${giftIndex}`)?.value || '';
+                        } else if (giftType.includes('item')) {
+                            giftType = "item";
+                            giftDetails = document.getElementById(`itemDescriptionbeneficiary${index}${giftIndex}`)?.value || '';
+                        }
+
+                        beneficiaryGifts.push({ giftType, giftDetails });
+                    });
+
+                    gifts.push({ type: 'beneficiary', name, relationship, address, beneficiaryGifts });
+                });
+
+                // Collect gifts for charities
+                document.querySelectorAll('input[name="charityName"]').forEach((charity, index) => {
+                    const name = charity?.value || '';
+                    const address = document.getElementById(`charityAddress${index}`)?.value || '';
+                    
+                    const charityGifts = [];
+                    document.querySelectorAll(`#giftDetailsCharity${index} > div`).forEach((giftDiv, giftIndex) => {
+                        //get the selected gift form's id
+                        let giftType = giftDiv.querySelector(".gift-selection-card:not(.hidden),.gift-input-form:not(.hidden)")?.id || '';
+                        let giftDetails = '';
+
+                        //if no form opened then return
+                        if(giftType.includes("giftSelectionCard")){
+                            return;
+                        }
+
+                        if (giftType.includes('cash')) {
+                            giftType = "cash";
+                            giftDetails = document.getElementById(`cashAmountcharity${index}${giftIndex}`)?.value || '';
+                        } else if (giftType.includes('property')) {
+                            giftType = "property";
+                            const propertyAddress = document.getElementById(`propertyAddresscharity${index}${giftIndex}`)?.value || '';
+                            const propertyPercentage = document.getElementById(`propertyPercentagecharity${index}${giftIndex}`)?.value || '';
+                            giftDetails = `${propertyAddress} (Percentage: ${propertyPercentage}%)`;
+                        } else if (giftType.includes('collection')) {
+                            giftType = "collection";
+                            giftDetails = document.getElementById(`collectionDescriptioncharity${index}${giftIndex}`)?.value || '';
+                        } else if (giftType.includes('item')) {
+                            giftType = "item";
+                            giftDetails = document.getElementById(`itemDescriptioncharity${index}${giftIndex}`)?.value || '';
+                        }
+
+                        charityGifts.push({ giftType, giftDetails });
+                    });
+
+                    gifts.push({ type: 'charity', name, address, charityGifts });
+                });
+                            
+                willData.gifts = gifts;
+            }
+
+            function saveStep7(){
+                const residualEstate = [];
+                document.querySelectorAll('input[name^="beneficiaryPercentage"]').forEach((input, index) => {
+                    residualEstate.push({
+                        beneficiary: document.querySelectorAll('input[name="beneficiaryName"]')[index]?.value || '',
+                        percentage: input?.value || ''
+                    });
+                });
+
+                document.querySelectorAll('input[name^="charityPercentage"]').forEach((input, index) => {
+                    residualEstate.push({
+                        charity: document.querySelectorAll('input[name="charityName"]')[index]?.value || '',
+                        percentage: input?.value || ''
+                    });
+                });
+
+                            
+                willData.residualEstate = residualEstate;
+            }
+
+            function saveStep8(){
+                const contingencies = [];
+                document.querySelectorAll('input[name="beneficiaryName"]').forEach((beneficiary, index) => {
+                    //get the selected plan
+                    const selectedPlan = document.querySelector(`input[name="contingency${index}"]:checked`)?.value || '';
+
+                    //saving specific person's data if user selects specific plan
+                    if(selectedPlan === "specific"){
+                        let personName = document.querySelector(`input[name="specificFullName${index}"]`)?.value || '';
+                        let personRelationship = document.querySelector(`select[name="specificRelationship${index}"]`)?.value || '';
+                        let personAddress = document.querySelector(`input[name="specificAddress${index}"]`)?.value || '';
+
+                        contingencies.push({
+                            beneficiary: beneficiary?.value || '',
+                            plan: selectedPlan,
+                            specificPerson: {
+                                name: personName,
+                                relationship: personRelationship,
+                                address: personAddress
+                            }
+                        });
+                    } else {
+                        contingencies.push({
+                            beneficiary: beneficiary?.value || '',
+                            plan: selectedPlan
+                        });
+                    }
+                    
+                });
+
+                            
+                willData.contingencies = contingencies;
+            }
+
+            function saveStep9(){
+                const executors = [];
+                document.querySelectorAll('input[name="executor"]:checked').forEach((executor) => {
+                    if (executor.value === 'someoneElse') {
+                        //saving all other executors data
+                        let otherExecutors = [];
+                        document.querySelectorAll("#additionalExecutorFieldsContainer > div").forEach((otherExecutor,index)=>{
+                            const executorName = otherExecutor.querySelector(`input[name="executorFullName${index}"]`)?.value || '';
+                            const executorRelationship = otherExecutor.querySelector(`select[name="executorRelationship${index}"]`)?.value || '';
+                            const executorAddress = otherExecutor.querySelector(`input[name="executorAddress${index}"]`)?.value || '';
+                            
+                            otherExecutors.push({
+                                name: executorName,
+                                relationship: executorRelationship,
+                                address: executorAddress
+                            })
+                        })
+                        executors.push({
+                            type: 'someoneElse',
+                            OtherExecutors: otherExecutors
+                        });
+
+
+                    } else {
+                        executors.push({ type: executor.value });
+                    }
+                });
+
+                            
+                willData.executors = executors;
+            }
+
+            function saveStep10(){
+                const childrenAndGuardianship = {
+                    hasChildren: document.querySelector('input[name="hasChildren"]:checked')?.value || '',
+                };
+
+                if(childrenAndGuardianship.hasChildren === "yes"){
+                    childrenAndGuardianship.manageGuardian = document.querySelector('input[name="manageInheritance"]:checked')?.value || '';
+                    if(childrenAndGuardianship.manageGuardian === "yes"){                                        
+                        let childrenUnder18List = []
+                        document.querySelectorAll("#childrenUnder18List input:checked").forEach((input)=>{
+                            childrenUnder18List.push(input.value)
+                        })
+                        childrenAndGuardianship.childrenUnder18List = childrenUnder18List;
+                    }
+                    childrenAndGuardianship.appointGuardians = document.querySelector('input[name="appointGuardians"]:checked')?.value || '';
+                    if(childrenAndGuardianship.appointGuardians === "yes"){                                        
+                        let guardians = []
+                        document.querySelectorAll('input[name^="guardianFullName"]').forEach((guardian, index) => {
+                            guardians.push({
+                                name: guardian?.value || '',
+                                relationship: document.querySelector(`select[name="guardianRelationship${index}"]`)?.value || '',
+                                address: document.querySelector(`input[name="guardianAddress${index}"]`)?.value || ''
+                            });
+                        });
+                        childrenAndGuardianship.guardians = guardians;
+                    }
+
+                }
+
+                            
+                willData.childrenAndGuardianship = childrenAndGuardianship;
+            }
+
+            function saveStep11(){
+                const pets = {
+                    hasPets: document.querySelector('input[name="hasPets"]:checked')?.value || '',
+                    caretaker: document.querySelector('input[name="petCaretaker"]:checked')?.value || '',
+                    caretakerDetails: {
+                        fullName: document.querySelector('input[name="petCaretakerFullName"]')?.value || '',
+                        relationship: document.querySelector('select[name="petCaretakerRelationship"]')?.value || '',
+                        address: document.querySelector('input[name="petCaretakerAddress"]')?.value || ''
+                    },
+                    leaveMoney: document.querySelector('input[name="leaveMoneyForPets"]:checked')?.value || '',
+                    amount: document.querySelector('input[name="petMoneyAmount"]')?.value || ''
+                };
+
+                willData.pets = pets;
+            }
+
+            function saveStep12(){
+                willData.digitalAssets = document.querySelector('input[name="allowDigitalAssets"]:checked')?.value || '';
+            }
+
+            function saveStep13(){
+                willData.funeralPlans = document.querySelector('input[name="funeralPlan"]:checked')?.value || '';
+            }
+
+            function saveStep14(){
+                willData.delivery = document.querySelector('input[name="deliveryMethod"]:checked')?.value || '';
+            }
+
+            function addListenersAndSaveData(email){
+                const docRef = doc(db, 'wills', email);
+                //attach listener to save data on click
+                document.querySelectorAll("[id*='step'] .btn-primary").forEach((nextButton,index)=>{
+                    nextButton.addEventListener("click",async function(){
+                        if(index === 0){
+                            saveStep1();
+                            willData.currentStep = 1;
+
+                        } else {
+                            let parentStep = nextButton.parentElement.parentElement.id;
+                            if(parentStep === "step2"){
+                                saveStep2()
+                                willData.currentStep = 2;
+
+                            } else if(parentStep === "step3"){
+                                saveStep3()
+                                willData.currentStep = 3;
+
+                            } else if(parentStep === "step4"){
+                                saveStep4()
+                                willData.currentStep = 4;
+
+                            } else if(parentStep === "step5"){
+                                saveStep5()
+                                willData.currentStep = 5;
+
+                            } else if(parentStep === "step6"){
+                                saveStep6()
+                                willData.currentStep = 6;
+
+                            } else if(parentStep === "step7"){
+                                saveStep7()
+                                willData.currentStep = 7;
+
+                            } else if(parentStep === "step8"){
+                                saveStep8()
+                                willData.currentStep = 8;
+
+                            } else if(parentStep === "step9"){
+                                saveStep9()
+                                willData.currentStep = 9;
+
+                            } else if(parentStep === "step10"){
+                                saveStep10()
+                                willData.currentStep = 10;
+
+                            } else if(parentStep === "step11"){
+                                saveStep11()
+                                willData.currentStep = 11;
+
+                            } else if(parentStep === "step12"){
+                                saveStep12()
+                                willData.currentStep = 12;
+
+                            } else if(parentStep === "step13"){
+                                saveStep13()
+                                willData.currentStep = 13;
+
+                            } else if(parentStep === "step14"){
+                                saveStep14()
+                                willData.currentStep = 14;
+                            }
+
+                        }
+
+                        await setDoc(docRef, willData,{ merge:true });
+                        console.log("Successfully submitted to Firestore");
+
+                    })
+                })
+            }
+
+            function showWillData(DBWillData){
+                let currentStep = Number(DBWillData.currentStep);
+
+                if(currentStep >= 1){
+                    document.querySelectorAll("#step1 .form-group")[0].querySelector("input[value='"+DBWillData.location+"']").checked = true;
+                    document.querySelectorAll("#step1 .form-group")[1].querySelector("input[value='"+DBWillData.generalInfo.relationShip+"']").checked = true;
+                }
+
+                if(currentStep >= 2){
+                    document.querySelector("#step2 input[value='"+DBWillData.whoNeedsWill+"']").checked = true;
+                }
+
+                if(currentStep >= 3){
+                    let generalInfo = DBWillData.generalInfo;
+                    document.getElementById('firstName').value = generalInfo.firstName;
+                    document.getElementById('lastName').value = generalInfo.lastName;
+                    document.getElementById('email').value = generalInfo.email;
+                    document.getElementById('address1').value = generalInfo.address1;
+                    document.getElementById('address2').value = generalInfo.address2;
+                    document.getElementById('city').value = generalInfo.city;
+                    document.getElementById('postcode').value = generalInfo.postcode;
+                }
+
+                if(currentStep >= 4){
+                    document.querySelectorAll("#step4 .form-group")[0].querySelector("input[value='"+DBWillData.foreignAssets+"']").click();
+                    if(DBWillData.includeForeign){
+                        document.querySelectorAll("#step4 .form-group")[1].querySelector("input[value='"+DBWillData.includeForeign+"']").checked = true;
+                    }
+                }
+
+                if(currentStep >= 5){
+                    let beneficiaryCount = 0;
+                    let charityCount = 0;
+                    DBWillData.gifts.forEach((gift,index)=>{
+                        if(gift.type === "beneficiary"){
+                            window.addBeneficiary();
+                            document.getElementById(`beneficiaryName${beneficiaryCount}`).value = gift.name;
+                            document.getElementById(`beneficiaryRelationship${beneficiaryCount}`).value = gift.relationship;
+                            document.getElementById(`beneficiaryAddress${beneficiaryCount}`).value = gift.address;
+                            beneficiaryCount++;
+                        } else if(gift.type === "charity"){
+                            window.addCharity();
+                            document.getElementById(`charityName${charityCount}`).value = gift.name;
+                            document.getElementById(`charityAddress${charityCount}`).value = gift.address;
+                            charityCount++;
+                        }
+                    })
+
+                }
+
+                if(currentStep >= 6){
+                    populateGiftRecipientList();
+                    let beneficiaryCount = 0;
+                    let charityCount = 0;
+                    DBWillData.gifts.forEach((gift,index)=>{
+                        if(gift.type === "beneficiary"){
+                            gift.beneficiaryGifts.forEach((beneGift,gIndex)=>{
+                                addGift(beneficiaryCount, gift.type, gift.name, gIndex , beneGift.giftType)
+                                if(beneGift.giftType === "cash"){
+                                    document.querySelector("#cashAmountbeneficiary"+beneficiaryCount+""+gIndex).value = beneGift.giftDetails;
+                                } else if(beneGift.giftType === "property"){
+
+                                    const address = beneGift.giftDetails.split(" (")[0];
+                                    // Step 2: Extract the percentage from inside the parentheses
+                                    const percentageMatch = beneGift.giftDetails.match(/\(Percentage: (\d+)%\)/); // Regex to capture the percentage
+                                    const percentage = percentageMatch ? parseInt(percentageMatch[1], 10) : null;
+
+                                    document.querySelector("#propertyAddressbeneficiary"+beneficiaryCount+""+gIndex).value = address;
+                                    document.querySelector("#propertyPercentagebeneficiary"+beneficiaryCount+""+gIndex).value = percentage;
+                                } else if(beneGift.giftType === "collection"){
+                                    document.querySelector("#collectionDescriptionbeneficiary"+beneficiaryCount+""+gIndex).value = beneGift.giftDetails;
+                                } else if(beneGift.giftType === "item"){
+                                    document.querySelector("#itemDescriptionbeneficiary"+beneficiaryCount+""+gIndex).value = beneGift.giftDetails;
+                                } 
+                            })
+                            beneficiaryCount++;
+                        } else if(gift.type === "charity"){
+                            gift.charityGifts.forEach((charGift,gIndex)=>{
+                                addGift(charityCount, gift.type, gift.name, gIndex , charGift.giftType)
+                                if(charGift.giftType === "cash"){
+                                    document.querySelector("#cashAmountcharity"+charityCount+""+gIndex).value = charGift.giftDetails;
+                                } else if(charGift.giftType === "property"){
+
+                                    const address = charGift.giftDetails.split(" (")[0];
+                                    // Step 2: Extract the percentage from inside the parentheses
+                                    const percentageMatch = charGift.giftDetails.match(/\(Percentage: (\d+)%\)/); // Regex to capture the percentage
+                                    const percentage = percentageMatch ? parseInt(percentageMatch[1], 10) : null;
+
+                                    document.querySelector("#propertyAddresscharity"+charityCount+""+gIndex).value = address;
+                                    document.querySelector("#propertyPercentagecharity"+charityCount+""+gIndex).value = percentage;
+                                } else if(charGift.giftType === "collection"){
+                                    document.querySelector("#collectionDescriptioncharity"+charityCount+""+gIndex).value = charGift.giftDetails;
+                                } else if(charGift.giftType === "item"){
+                                    document.querySelector("#itemDescriptioncharity"+charityCount+""+gIndex).value = charGift.giftDetails;
+                                } 
+                            })
+                            charityCount++;
+                        }
+                    })
+
+                }
+
+                if(currentStep >= 7){
+                    window.populateResidualEstateDivisionList()
+
+                    let beneficiaryCount = 0;
+                    let charityCount = 0;
+                    DBWillData.residualEstate.forEach((estate)=>{
+                        if(estate.beneficiary){
+                            document.getElementById("beneficiaryPercentage"+beneficiaryCount).value = estate.percentage;
+                            beneficiaryCount++;
+                        } else if(estate.charity){
+                            document.getElementById("charityPercentage"+charityCount).value = estate.percentage;
+                            charityCount++;
+                        }
+                    })
+                    window.calculateTotalPercentage();
+                }
+
+                if(currentStep >= 8){
+                    window.populateContingencyList();
+
+                    DBWillData.contingencies.forEach((contingency,index)=>{
+                        let id = contingency.beneficiary.replaceAll(" ","-");
+                        id += index;
+                        document.querySelector(`#${id} input[value="${contingency.plan}"]`).click();
+                        if(contingency.plan === "specific"){
+                            document.querySelector(`#${id} input[name="specificFullName${index}"]`).value = contingency.specificPerson.name;
+                            document.querySelector(`#${id} select[name="specificRelationship${index}"]`).value = contingency.specificPerson.relationship;
+                            document.querySelector(`#${id} input[name="specificAddress${index}"]`).value = contingency.specificPerson.address;
+                        }
+                    })
+                }
+
+                if(currentStep >= 9){
+                    window.populateExecutorOptions();
+
+                    DBWillData.executors.forEach((executor)=>{
+                        document.querySelector(`#step9 input[value="${executor.type}"]`).click();
+                        if(executor.OtherExecutors){
+                            executor.OtherExecutors.forEach((otherExecutor,index)=>{
+                                if(index > 0){
+                                    window.addNewExecutor();
+                                }
+                                document.querySelector(`#step9 input[name="executorFullName${index}"]`).value = otherExecutor.name;
+                                document.querySelector(`#step9 select[name="executorRelationship${index}"]`).value = otherExecutor.relationship;
+                                document.querySelector(`#step9 input[name="executorAddress${index}"]`).value = otherExecutor.address; 
+                            })
+                        }
+                    })
+                }
+
+                if(currentStep >= 10){
+                    let CaG = DBWillData.childrenAndGuardianship;
+                    document.querySelector(`input[name="hasChildren"][value="${CaG.hasChildren}"]`).click();
+                    if(CaG.hasChildren === "yes"){
+                        document.querySelector(`input[name="manageInheritance"][value="${CaG.manageGuardian}"]`).click();
+                        if(CaG.manageGuardian === "yes"){ 
+                            CaG.childrenUnder18List.forEach((child)=>{
+                                document.querySelector(`#childrenUnder18List input[value="${child}"]`).click();
+                            })                                       
+                        }
+                        document.querySelector(`input[name="appointGuardians"][value="${CaG.appointGuardians}"]`).click();
+                        if(CaG.appointGuardians === "yes"){  
+                            if(CaG.guardians){
+                                CaG.guardians.forEach((guardian,index)=>{
+                                    window.addGuardian()
+                                    document.querySelector(`input[name="guardianFullName${index}"]`).value = guardian.name;
+                                    document.querySelector(`select[name="guardianRelationship${index}"]`).value = guardian.relationship;
+                                    document.querySelector(`input[name="guardianAddress${index}"]`).value = guardian.address;
+                                })
+                            }                                  
+                        }
+
+                    }
+                }
+
+                if(currentStep >= 11){
+                    let pets = DBWillData.pets;
+                    document.querySelector(`input[name="hasPets"][value="${pets.hasPets}"]`).click();
+                    if(pets.hasPets === "yes"){
+                        document.querySelector(`input[name="petCaretaker"][value="${pets.caretaker}"]`).click();
+                        if(pets.caretaker === "someoneElse"){
+                            document.querySelector('input[name="petCaretakerFullName"]').value = pets.caretakerDetails.fullName;
+                            document.querySelector('select[name="petCaretakerRelationship"]').value = pets.caretakerDetails.relationship;
+                            document.querySelector('input[name="petCaretakerAddress"]').value = pets.caretakerDetails.address;
+                        }
+                        document.querySelector(`input[name="leaveMoneyForPets"][value="${pets.leaveMoney}"]`).click();
+                        if(pets.leaveMoney === "yes"){
+                            document.querySelector('input[name="petMoneyAmount"]').value = pets.amount;
+                        }
+
+
+                    }
+                }
+
+                if(currentStep >= 12){
+                    document.querySelector(`input[name="allowDigitalAssets"][value="${DBWillData.digitalAssets}"]`).click();
+                }
+
+                if(currentStep >= 13){
+                    document.querySelector(`input[name="funeralPlan"][value="${DBWillData.funeralPlans}"]`).click();
+                }
+
+                if(currentStep >= 14){
+                    window.updateDeliveryOptionsWithDates()
+                    document.querySelector(`input[name="deliveryMethod"][value="${DBWillData.delivery}"]`).click();
+                }
+
+                showStep(currentStep);
+            }
+
+            onAuthStateChanged(auth, async (user) => {
+                if (!user) {
+                    if (isSignInWithEmailLink(auth, window.location.href)) {
+                        let email = window.localStorage.getItem('emailForSignIn');
+                        if (!email) {
+                            // Prompt user for email if not stored
+                            email = window.prompt('Please provide your email for confirmation');
+                        }
+                        try {
+                            const result = await signInWithEmailLink(auth, email, window.location.href);
+                            console.log('User signed up and logged in:', result.user);
+                            window.localStorage.removeItem('emailForSignIn');
+
+                            //addListenersAndSaveData(email);
+
+
+
+                            //showWillData()
+                        } catch (error) {
+                            console.error('Error completing sign-up:', error);
+                        }
+                    } else {
+                        const actionCodeSettings = {
+                            url: 'https://isthatfar.github.io/Will/quest-ideal.html', // Redirect to your app
+                            handleCodeInApp: true,
+                        };
+    
+                        async function handleLoginEmail(event){
+                            try {
+                                    let email = event.detail;
+                                    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+                                    // Save the email locally to complete sign-in later
+                                    window.localStorage.setItem('emailForSignIn', email);
+                                    console.log('Sign-up email sent!');
+                                    
+                                    //only send email once
+                                    window.removeEventListener("sendLoginEmail",handleLoginEmail)
+
+                                    addListenersAndSaveData(email);
+
+                                    saveStep1();
+                                    saveStep2()
+                                    saveStep3()
+                                    willData.currentStep = 3;
+                                    const docRef = doc(db, "wills", email);
+                                    await setDoc(docRef, willData,{ merge:true });
+
+                                } catch (error) {
+                                    console.error('Error sending sign-up email:', error);
+                                }
+                        }
+    
+                        window.addEventListener("sendLoginEmail",handleLoginEmail)
+                    }
+
+                } else {
+                    addListenersAndSaveData(user.email);
+
+                    const docRef = doc(db, "wills", user.email);
+                    const docSnap = await getDoc(docRef);
+
+                    if(docSnap.exists()){
+                        let willData = docSnap.data();
+                        showWillData(willData)
+                    }
+                }
+            })
+        })
+        // Attach event listener to the form submission
+        const form = document.querySelector('.submit-will-form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            submitWillData();
+        });
+
+        
+
+
+    </script>
+
+
+<script>import { getStorage, ref, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
+
+    // Function to get the download URL of a specific file in Firebase Storage
+    function getFileDownloadURL(filePath) {
+        const storage = getStorage(); // Get Storage instance
+        const fileRef = ref(storage, filePath); // Create reference to the file
+    
+        getDownloadURL(fileRef)
+            .then((url) => {
+                console.log('Download URL:', url);
+                // Optional: You can use the URL to download or display the file
+            })
+            .catch((error) => {
+                console.error('Error fetching download URL:', error);
+            });
+    }
+    
+    // Example usage: Call the function with the path to your file
+    getFileDownloadURL('files/file.pdf');
+    </script>
+
+<script>import { getStorage, ref, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
+
+    // Function to get the download URL of a specific file in Firebase Storage
+    function getFileDownloadURL(filePath) {
+        const storage = getStorage(); // Get Storage instance
+        const fileRef = ref(storage, filePath); // Create reference to the file
+    
+        getDownloadURL(fileRef)
+            .then((url) => {
+                console.log('Download URL:', url);
+                // Optional: You can use the URL to download or display the file
+            })
+            .catch((error) => {
+                console.error('Error fetching download URL:', error);
+            });
+    }
+    
+    // Example usage: Call the function with the path to your file
+    getFileDownloadURL('files/file.pdf');
+    </script>
+    <!-- Bootstrap JS and Popper.js and Javascript for interactivity -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="quest-ideal.js"></script>
+    <script src="questionnaire.css"></script>
+
+
+    <!-- Progress Bar -->
+    <div class="container mt-4">
+        <div class="progress">
+            <div id="progressBar" class="progress-bar progress-bar" role="progressbar" style="width: 6%;" aria-valuenow="6" aria-valuemin="0" aria-valuemax="100" </div>
+            </div>
+        </div>
+
+        <!-- Step 1: General Information -->
+        <div id="step1" class="container mt-5">
+            <h2>General Information</h2>
+            <!-- Tip Section - Appears on the right -->
+<div id="tipContainer" class="tip-container">
+    <button class="info-btn" onclick="toggleTips('tipsContent')">
+        <i class="fas fa-info-circle"></i>
+    </button>
+    <div id="tipsContent" class="tips-content hidden">
+        <h5>Helpful Tips</h5>
+        <ul id="dynamicTips">
+            <li>Tip 1: Default Tip</li>
+        </ul>
+    </div>
+</div>
+
+            <div class="form-group">
+                <h5>Where do you live?</h5><br>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="location" value="England" id="locationEngland">
+                    <label class="form-check-label" for="locationEngland">England</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="location" value="Wales" id="locationWales">
+                    <label class="form-check-label" for="locationWales">Wales</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="location" value="Scotland" id="locationScotland">
+                    <label class="form-check-label" for="locationScotland">Scotland</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="location" value="Northern Ireland" id="locationNorthernIreland">
+                    <label class="form-check-label" for="locationNorthernIreland">Northern Ireland</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <h5>What is your relationship status?</h5><br>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="relationship" value="Single" id="relationshipSingle">
+                    <label class="form-check-label" for="relationshipSingle">Single</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="relationship" value="In a relationship" id="relationshipInRelationship">
+                    <label class="form-check-label" for="relationshipInRelationship">In a relationship</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="relationship" value="Married" id="relationshipMarried">
+                    <label class="form-check-label" for="relationshipMarried">Married</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="relationship" value="Civil" id="relationshipCivil">
+                    <label class="form-check-label" for="relationshipCivil">In a civil partnership</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="relationship" value="Widowed" id="relationshipWidowed">
+                    <label class="form-check-label" for="relationshipWidowed">Widowed</label>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="goToStep2()">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 2: Who Needs a Will -->
+    <div id="step2" class="hidden container mt-5">
+        <h5>Who needs a will?</h5><br>
+        <div id="willOptions" class="form-group d-flex flex-column align-items-center">
+            <div class="form-check" id="singleOrWidowedOption">
+                <input type="radio" id="whoNeedsWillJustMe" name="whoNeedsWill" value="Just me">
+                <label class="form-check-label" for="whoNeedsWillJustMe">
+                    <h5>Just me</h5>
+                    <p>If your partner already has a will and doesn't need to update it</p>
+                </label>
+            </div>
+            <div class="form-check" id="partnerOption">
+                <input type="radio" id="whoNeedsWillPartner" name="whoNeedsWill" value="Me and my partner">
+                <label class="form-check-label" for="whoNeedsWillPartner">
+                    <h5>Me and my partner</h5>
+                    <p>If you are married, partnered, or just with someone</p>
+                </label>
+            </div>
+        </div>
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="goToStep1()">Previous</button>
+            <button class="btn btn-primary" onclick="goToStep3()">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 3: Contact Information -->
+    <div id="step3" class="hidden container mt-5">
+        <h2>Contact Information</h2>
+
+        <h5>What is your email address?</h5>
+        <div class="form-group">
+            <label for="email"></label>
+            <input type="email" class="form-control" id="email" placeholder="you@email.com">
+        </div><br>
+
+        <h5>What is your full name?</h5>
+        <div class="form-group">
+            <label for="firstName"></label>
+            <input type="text" class="form-control" id="firstName" placeholder="First and middle names">
+        </div>
+        <div class="form-group mt-2">
+            <label for="lastName"></label>
+            <input type="text" class="form-control" id="lastName" placeholder="Last name">
+        </div><br>
+
+
+        <div class="form-group">
+            <h5>What is your home address?</h5>
+            <div class="form-group">
+                <label for="address1"></label>
+                <input type="text" class="form-control" id="address1" placeholder="Address line 1">
+            </div>
+            <div class="form-group">
+                <label for="address2"></label>
+                <input type="text" class="form-control" id="address2" placeholder="Address line 2 (optional)">
+            </div>
+            <div class="form-group">
+                <label for="city"></label>
+                <input type="text" class="form-control" id="city" placeholder="Town/City">
+            </div>
+            <div class="form-group">
+                <label for="postcode"></label>
+                <input type="text" class="form-control" id="postcode" placeholder="Postcode">
+            </div>
+        </div><br>
+
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="goToStep2()">Previous</button>
+            <button class="btn btn-primary" onclick="goToStep4()">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 4: Asset Overview -->
+    <div id="step4" class="hidden container mt-5">
+        <h2>Asset Overview</h2>
+
+        <!-- Question: Do you have any foreign assets? -->
+        <div class="form-group">
+            <h5>Do you have any foreign assets?</h5><br>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" id="foreignAssetsYes" name="foreignAssets" value="yes" onclick="showForeignAssetQuestion()">
+                <label class="form-check-label" for="foreignAssetsYes">Yes</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" id="foreignAssetsNo" name="foreignAssets" value="no" onclick="hideForeignAssetQuestion()">
+                <label class="form-check-label" for="foreignAssetsNo">No</label>
+            </div>
+        </div>
+
+        <!-- Include Foreign Assets -->
+        <div id="foreignAssetInclude" class="form-group hidden">
+            <h5>Do you want to include your foreign assets in this will?</h5><br>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" id="includeForeignAssetsYes" name="includeForeignAssets" value="yes">
+                <label class="form-check-label" for="includeForeignAssetsYes">Yes</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" id="includeForeignAssetsNo" name="includeForeignAssets" value="no">
+                <label class="form-check-label" for="includeForeignAssetsNo">No</label>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons (only one set) -->
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="goToStep3()">Previous</button>
+            <button class="btn btn-primary" onclick="goToStep5()">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 5: Beneficiaries and Gifts -->
+    <div id="step5" class="hidden container mt-5">
+        <h2>Beneficiaries and Gifts</h2>
+
+        <!-- Beneficiary Section -->
+        <div class="form-group">
+            <h5>Who do you want to receive a gift or share of your estate?</h5>
+            <div id="beneficiaryList"></div> <!-- Dynamically populated by JS -->
+            <button class="btn btn-outline-primary mt-2" onclick="addBeneficiary()">Add Beneficiary</button>
+        </div>
+
+        <!-- Charities Section -->
+        <div class="form-group">
+            <h5>Do you want to include any charities? (optional)</h5>
+            <div id="charityList"></div>
+            <button class="btn btn-outline-primary mt-2" onclick="addCharity()">Add a New Charity</button>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="goToStep4()">Previous</button>
+            <button class="btn btn-primary" onclick="goToStep6()">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 6: Specific Gifts or Donations -->
+    <div id="step6" class="hidden container mt-5">
+        <h5>Do You Want to Leave Specific Gifts or Donations?</h5>
+
+        <!-- Gift Recipient List (Dynamically Populated by JS) -->
+        <div id="giftRecipientList">
+            <!-- Example for Beneficiary 1 -->
+            <div id="beneficiary1" class="beneficiary-info">
+                <label for="beneficiaryName1">Name:</label>
+                <input type="text" id="beneficiaryName1" name="beneficiaryName1" placeholder="Enter Beneficiary Name">
+    
+                <label for="beneficiaryRelationship1">Relationship:</label>
+                <input type="text" id="beneficiaryRelationship1" name="beneficiaryRelationship1" placeholder="Enter Relationship">
+    
+                <!-- Gift Selection Card (Initial Options) -->
+                <div id="giftSelectionCard1" class="gift-selection-card">
+                    <div class="gift-icon">
+                        <i class="lni lni-box-gift-2"></i>
+                    </div>
+    
+                    <div class="gift-options">
+                        <button class="gift-option" onclick="showGiftDetails(1, 'cash')">Cash</button>
+                        <button class="gift-option" onclick="showGiftDetails(1, 'property')">Property</button>
+                        <button class="gift-option" onclick="showGiftDetails(1, 'collection')">Collection of items</button>
+                        <button class="gift-option" onclick="showGiftDetails(1, 'item')">Item</button>
+                    </div>
+    
+                    <div class="delete-icon" onclick="removeGiftSelection(1)">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                </div>
+    
+                <!-- Cash Input Form (Initially Hidden) -->
+                <div id="cashInputForm1" class="gift-input-form hidden">
+                    <div class="gift-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="gift-input-field">
+                        <label for="cashAmount1">Cash Amount:</label>
+                        <input type="number" id="cashAmount1" name="cashAmount1" placeholder="Enter amount">
+                        <p class="example-text">e.g. £500</p>
+                    </div>
+                    <div class="delete-icon" onclick="resetSelection(1)">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                </div>
+    
+                <!-- Property Input Form (Initially Hidden) -->
+                <div id="propertyInputForm1" class="gift-input-form hidden">
+                    <div class="gift-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <div class="gift-input-field">
+                        <label for="propertyAddress1">My property located at</label>
+                        <input type="text" id="propertyAddress1" name="propertyAddress1" placeholder="Enter address">
+                        <p class="example-text">e.g. 12 Bridge Road W12 N34, London</p>
+                    </div>
+                    <div class="gift-input-field">
+                        <label for="propertyPercentage1">Percentage of the property</label>
+                        <input type="number" id="propertyPercentage1" name="propertyPercentage1" placeholder="Enter percentage">
+                        <p class="example-text">e.g. to split this property between two beneficiaries you can gift 50% each</p>
+                    </div>
+                    <div class="delete-icon" onclick="resetSelection(1)">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                </div>
+    
+                <!-- Collection of Items Input Form (Initially Hidden) -->
+                <div id="collectionInputForm1" class="gift-input-form hidden">
+                    <div class="gift-icon">
+                        <i class="lni lni-box-gift-2"></i>
+                    </div>
+                    <div class="gift-input-field">
+                        <label for="collectionDescription1">All of my</label>
+                        <input type="text" id="collectionDescription1" name="collectionDescription1" placeholder="Enter collection description">
+                        <p class="example-text">e.g. all of my jewels</p>
+                    </div>
+                    <div class="delete-icon" onclick="resetSelection(1)">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                </div>
+    
+                <!-- Item Input Form (Initially Hidden) -->
+                <div id="itemInputForm1" class="gift-input-form hidden">
+                    <div class="gift-icon">
+                        <i class="lni lni-box-gift-2"></i>
+                    </div>
+                    <div class="gift-input-field">
+                        <label for="itemDescription1">My</label>
+                        <input type="text" id="itemDescription1" name="itemDescription1" placeholder="Enter item description">
+                        <p class="example-text">e.g. my Volvo car registered WXX0000, my green necklace, etc.</p>
+                    </div>
+                    <div class="delete-icon" onclick="resetSelection(1)">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"><br>
+
+        <!-- Navigation Buttons -->
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="goToStep5()">Previous</button>
+            <button class="btn btn-primary" onclick="goToStep7()">Next</button>
+        </div>
+    </div>
+    
+    <!-- Step 7: Division of Residual Estate -->
+    <div id="step7" class="hidden container mt-5">
+        <h2 class="mt-4">Division of Residual Estate</h2>
+
+        <div id="residualEstateDivisionList"></div> <!-- This is dynamically populated -->
+
+        <div class="residual-total-container">
+            <label for="totalPercentage" class="total-label">TOTAL</label>
+            <input type="text" id="totalPercentage" class="total-percentage-input" readonly value="0"><!-- Total percentage -->
+        </div>
+        
+        <div id="percentageError" class="error-container hidden">
+            <i class="lni lni-warning" style="color: #ad4e58; font-size: 24px; margin-right: 10px;"></i>
+            Total must add up to 100%
+        </div><br>
+
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="goToStep6()">Previous Page</button>
+            <button class="btn btn-primary" onclick="validatePercentage()">Next Page</button> <!-- Validation before moving -->
+        </div>
+    </div>
+
+    <!-- Step 8: Contingency Planning -->
+    <div id="step8" class="hidden container mt-5">
+        <h2 class="mb-4">Contingency Planning</h2>
+        <h5>If one of the following beneficiaries dies before you, what should happen to their gifts and share of your inheritance?</h5>
+
+        <div id="contingencyList" class="mb-4"></div> <!-- This is where the beneficiaries will be dynamically inserted -->
+
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="goToStep7()">Previous</button>
+            <button class="btn btn-primary" onclick="goToStep9()">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 9: Executors -->
+    <div id="step9" class="hidden container mt-5">
+        <h2>Executors</h2>
+        <h5>Who do you want to appoint as executor?</h5><br>
+        
+        <div class="form-check">
+            <input type="checkbox" id="swiftwills" name="executor" value="Swiftwills">
+            <label class="form-check-label" for="swiftwills">Swiftwills</label>
+        </div>
+    
+        <div id="executorList"></div> <!-- Dynamically generated checkboxes will be placed here -->
+    
+        <div class="form-check">
+            <input type="checkbox" id="someoneElse" name="executor" value="someoneElse" onclick="toggleAdditionalExecutorFields(this)">
+            <label class="form-check-label" for="someoneElse">Add someone else</label>
+        </div>
+    
+        <div id="additionalExecutorFieldsContainer" class="hidden">
+            <!-- Executor cards will be appended here dynamically -->
+        </div>
+    
+        <button id="addExecutorButton" class="btn btn-outline-primary mt-3 hidden" onclick="addNewExecutor()">Add another executor</button>
+        <br>
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="goToStep8()">Previous</button>
+            <button class="btn btn-primary" onclick="goToStep10()">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 10: Children and Guardianship -->
+    <div id="step10" class="hidden container mt-5">
+        <h2 class="mb-4">Children and Guardianship</h2>
+
+        <!-- Question 1: Do you have children under 18? -->
+        <div class="mb-3">
+            <label class="form-label"><h5>Do you have any children under 18?</h5></label><br><br>
+            <div class="form-check">
+                <input type="radio" class="form-check-input" name="hasChildren" value="yes" onclick="showChildrenFields()" id="childrenYes">
+                <label class="form-check-label" for="childrenYes">Yes</label>
+                <input type="radio" class="form-check-input" name="hasChildren" value="no" onclick="hideChildrenFields()" id="childrenNo">
+                <label class="form-check-label" for="childrenNo">No</label><br>
+            </div>
+        </div>
+
+        <!-- Children-related fields (hidden by default) -->
+        <div id="childrenFields" class="hidden">
+
+            <!-- Question 2: Executors manage inheritance? -->
+            <div class="mb-3">
+                <label class="form-label"><h5>Do you want your executors to manage their inheritance until they turn 18?</h5></label><br><br>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="manageInheritance" value="yes" onclick="showExecutorFields()" id="manageInheritanceYes">
+                    <label class="form-check-label" for="manageInheritanceYes">Yes</label>
+                    <input type="radio" class="form-check-input" name="manageInheritance" value="no" onclick="hideExecutorFields()" id="manageInheritanceNo">
+                    <label class="form-check-label" for="manageInheritanceNo">No</label><br>
+                </div>
+            </div>
+
+            <!-- Executor-related fields (hidden by default) -->
+            <div id="executorFields" class="hidden mb-3">
+                <label class="form-label"><h5>Select any children under 18</h5></label><br><br>
+                <div id="childrenUnder18List" class="form-check">
+                    <!-- Dynamically populated with beneficiary names from Step 5 -->
+                </div>
+            </div>
+
+            <!-- Question 4: Appoint guardians -->
+            <div class="mb-3">
+                <label class="form-label"><h5>Do you want to appoint guardians in case a child is still under 18 when you pass away?</h5></label><br><br>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="appointGuardians" value="yes" onclick="showGuardianFields()" id="appointGuardiansYes">
+                    <label class="form-check-label" for="appointGuardiansYes">Yes</label>
+                    <input type="radio" class="form-check-input" name="appointGuardians" value="no" onclick="hideGuardianFields()" id="appointGuardiansNo">
+                    <label class="form-check-label" for="appointGuardiansNo">No</label><br>
+                    <!-- Guardian input fields (hidden by default) -->
+                    <div id="guardianFields" class="hidden mb-3">
+                        <div id="guardianList" class="form-group">
+                            <!-- Multiple guardians can be added here dynamically -->
+                        </div>
+                        <button id="addGuardianButton"  class="btn btn-outline-primary" onclick="addGuardian()">Add Another Guardian</button><br>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="goToStep9()">Previous</button>
+            <button class="btn btn-primary" onclick="goToStep11()">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 11: Pets -->
+    <div id="step11" class="hidden container mt-5">
+        <h2 class="mb-4">Pets</h2>
+
+        <!-- Question 1: Do you have any pets? -->
+        <div class="mb-3">
+            <label class="form-label"><h5>Do you have any pets?</h5></label><br><br>
+            <div class="form-check">
+                <input type="radio" class="form-check-input" name="hasPets" value="yes" id="petsYes" onclick="showPetFields()">
+                <label class="form-check-label" for="petsYes">Yes</label>
+            </div>
+            <div class="form-check">
+                <input type="radio" class="form-check-input" name="hasPets" value="no" id="petsNo" onclick="hidePetFields()">
+                <label class="form-check-label" for="petsNo">No</label>
+            </div>
+        </div>
+
+        <!-- Pet-related fields (hidden by default) -->
+        <div id="petFields" class="hidden">
+            <!-- Question 2: Who will take care of the pets? -->
+            <div class="mb-3">
+                <h5>Who do you want to take care of your pets?</h5><br>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="petCaretaker" value="executors" id="caretakerExecutors" onclick="hideAdditionalExecutorFields()">
+                    <label class="form-check-label" for="caretakerExecutors">My executors</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="petCaretaker" value="someoneElse" id="caretakerSomeoneElse" onclick="showAdditionalExecutorFields()">
+                    <label class="form-check-label" for="caretakerSomeoneElse">Someone else</label>
+                </div>
+            </div>
+
+            <!-- Additional caretaker fields for "Someone else" (hidden by default) -->
+            <div id="additionalPetCaretaker" class="beneficiary-card hidden mt-3 shadow-sm">
+                <div class="row align-items-center">
+                    <div class="col-3 col-md-2 text-center">
+                        <div class="avatar-placeholder">
+                            <i class="lni lni-users"></i> <!-- LineIcon for User -->
+                        </div>
+                    </div>
+                    <div class="col-8 col-md-9">
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-2">
+                                <input type="text" class="form-control" name="petCaretakerFullName" placeholder="Full Name"><br>
+                            </div>
+                            <div class="col-12 col-md-6 mb-2">
+                                <select name="petCaretakerRelationship" class="form-control">
+                                    <option value="Select">Relationship to you</option>
+                                    <option value="Spouse">Spouse</option>
+                                    <option value="Civil partner">Civil partner</option>
+                                    <option value="Partner">Partner</option>
+                                    <option value="Mother">Mother</option>
+                                    <option value="Father">Father</option>
+                                    <option value="Sister">Sister</option>
+                                    <option value="Brother">Brother</option>
+                                    <option value="Cousin">Cousin</option>
+                                    <option value="Daughter">Daughter</option>
+                                    <option value="Son">Son</option>
+                                    <option value="Grandson">Grandson</option>
+                                    <option value="Granddaughter">Granddaughter</option>
+                                    <option value="Great grandson">Great grandson</option>
+                                    <option value="Great granddaughter">Great granddaughter</option>
+                                    <option value="Niece">Niece</option>
+                                    <option value="Nephew">Nephew</option>
+                                    <option value="Friend">Friend</option>
+                                    <option value="Other">Other</option>
+                                </select><br>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 mb-2">
+                                <input type="text" class="form-control" name="petCaretakerAddress" placeholder="Address or City">
+                            </div>
+                        </div>
+                    </div>
+                </div><br><br>
+            </div>
+
+
+            <!-- Question 3: Leave money for pet care? -->
+            <div class="mb-3">
+                <h5>Do you want to leave money to help with the care of your pets?</h5><br>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="leaveMoneyForPets" value="yes" id="leaveMoneyYes" onclick="showLeaveMoneyAmount()">
+                    <label class="form-check-label" for="leaveMoneyYes">Yes</label>
+                </div>
+                <div class="form-check">
+                    <input type="radio" class="form-check-input" name="leaveMoneyForPets" value="no" id="leaveMoneyNo" onclick="hideLeaveMoneyAmount()">
+                    <label class="form-check-label" for="leaveMoneyNo">No</label>
+                </div>
+
+                <!-- Show if 'Yes' is selected -->
+                <div id="leaveMoneyAmount" class="hidden pet-care-section mt-2">
+                    <label for="petMoneyAmount"><h5>Amount of money for pet care</h5></label>
+                    <div class="modern-input-group">
+                        <span class="currency-symbol">£</span>
+                        <input type="number" class="modern-input no-spinne" id="petMoneyAmount" name="petMoneyAmount" placeholder="Enter amount">
+                    </div>
+                </div><br>
+            </div>
+        </div>
+
+
+        <!-- Navigation Buttons -->
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="goToStep10()">Previous</button>
+            <button class="btn btn-primary" onclick="goToStep12()">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 12: Digital Assets -->
+    <div id="step12" class="hidden container mt-5">
+        <h2 class="mb-4">Digital Assets</h2>
+
+        <div class="mb-3">
+            <label class="form-label"><h5>Do you want to allow your executor to deal with your digital assets?</h5></label><br><br>
+            <div class="form-check">
+                <input type="radio" class="form-check-input" name="allowDigitalAssets" value="yes" id="digitalAssetsYes">
+                <label class="form-check-label" for="digitalAssetsYes">Yes</label>
+                <input type="radio" class="form-check-input" name="allowDigitalAssets" value="no" id="digitalAssetsNo">
+                <label class="form-check-label" for="digitalAssetsNo">No</label><br>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="goToStep11()">Previous</button>
+            <button class="btn btn-primary" onclick="goToStep13()">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 13: Funeral Plans -->
+    <div id="step13" class="hidden container mt-5">
+        <h2 class="mb-4">Funeral Plans</h2>
+
+        <div class="mb-3">
+            <label class="form-label"><h5>What do you want to happen to your body?</h5></label><br><br>
+            <div class="form-check">
+                <input type="radio" class="form-check-input" name="funeralPlan" value="Cremation" id="funeralCremation">
+                <label class="form-check-label" for="funeralCremation">Cremation</label>
+                <input type="radio" class="form-check-input" name="funeralPlan" value="Burial" id="funeralBurial">
+                <label class="form-check-label" for="funeralBurial">Burial in a cemetery</label>
+                <input type="radio" class="form-check-input" name="funeralPlan" value="Natural burial" id="funeralNatural">
+                <label class="form-check-label" for="funeralNatural">Natural burial</label>
+                <input type="radio" class="form-check-input" name="funeralPlan" value="Donate to science" id="funeralScience">
+                <label class="form-check-label" for="funeralScience">Donate to science</label>
+                <input type="radio" class="form-check-input" name="funeralPlan" value="Family decide" id="funeralFamily">
+                <label class="form-check-label" for="funeralFamily">Let my family decide</label><br>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="goToStep12()">Previous</button>
+            <button class="btn btn-primary" onclick="goToStep14()">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 14: Delivery -->
+    <div id="step14" class="hidden container mt-5">
+        <h2 class="mb-4">Delivery</h2>
+        <div class="mb-3">
+            <label class="form-label"><h5>How would you like to get your will?</h5></label><br><br>
+            <div class="form-check-container">
+                <div class="form-check">
+                    <input type="radio" id="deliveryDigital" name="deliveryMethod" value="digitalDownload">
+                    <label class="form-check-label" for="deliveryDigital">
+                        <div class="text-container">
+                            <h5>Digital Download</h5>
+                            <p id="dateDigitalDownload">by [Date Placeholder]</p>
+                        </div>
+                        <span class="price">FREE</span>
+                    </label>
+                </div>
+
+                <div class="form-check">
+                    <input type="radio" id="delivery1stClass" name="deliveryMethod" value="1stClassPost">
+                    <label class="form-check-label" for="delivery1stClass">
+                        <div class="text-container">
+                            <h5>1st Class Post Delivery</h5>
+                            <p id="date1stClassPost">by [Date Placeholder]</p>
+                        </div>
+                        <span class="price">FREE</span>
+                    </label>
+                </div>
+                
+                <div class="form-check">
+                    <input type="radio" id="deliveryPriority" name="deliveryMethod" value="priorityReview">
+                    <label class="form-check-label" for="deliveryPriority">
+                        <div class="text-container">
+                            <h5>Priority Review & Post Delivery</h5>
+                            <p id="datePriorityReview">by [Date Placeholder]</p>
+                        </div>
+                        <span class="price">+£15</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+            
+
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary" onclick="goToStep13()">Previous</button>
+            <button class="btn btn-primary" onclick="goToStep15()">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 15: Review Page -->
+    <div id="step15" class="hidden container mt-5">
+        <h2>Review Your Will</h2>
+        <p>Please review the information below and ensure everything is correct before submitting your will.</p>
+        <div class="row">
+            <div class="col-md-8 col-md-12">
+                <div class="review-container">
+                    <div class="review-card-modern"></div>
+
+                    <!-- General Information -->
+                    <div class="review-card">
+                        <div class="review-card-header">
+                            <h5>Your Information <i class="lni lni-checkmark-circle review-completed-icon"></i></h5>
+                        </div>
+                        <div class="review-card-body">
+                            <p id="reviewGeneralInfo"></p>
+                        </div>
+                        <div class="review-card-footer">
+                            <button class="btn btn-outline-primary btn-sm" onclick="goToStep1()">Edit</button>
+                        </div>
+                    </div>
+
+                    <!-- Gifts & Beneficiaries -->
+                    <div class="review-card">
+                        <div class="review-card-header">
+                            <h5>Gifts & Beneficiaries <i class="lni lni-checkmark-circle review-completed-icon"></i></h5>
+                        </div>
+                        <div class="review-card-body">
+                            <p id="reviewGifts"></p>
+                        </div>
+                        <div class="review-card-footer">
+                            <button class="btn btn-outline-primary btn-sm" onclick="goToStep5()">Edit</button>
+                        </div>
+                    </div>
+
+                    <!-- Residuary Estate -->
+                    <div class="review-card">
+                        <div class="review-card-header">
+                            <h5>Residuary Estate <i class="lni lni-checkmark-circle review-completed-icon"></i></h5>
+                        </div>
+                        <div class="review-card-body">
+                            <p id="reviewResiduaryEstate"></p>
+                        </div>
+                        <div class="review-card-footer">
+                            <button class="btn btn-outline-primary btn-sm" onclick="goToStep7()">Edit</button>
+                        </div>
+                    </div>
+
+                    <!-- Executors -->
+                    <div class="review-card">
+                        <div class="review-card-header">
+                            <h5>Executors <i class="lni lni-checkmark-circle review-completed-icon"></i></h5>
+                        </div>
+                        <div class="review-card-body">
+                            <p id="reviewExecutors"></p>
+                        </div>
+                        <div class="review-card-footer">
+                            <button class="btn btn-outline-primary btn-sm" onclick="goToStep9()">Edit</button>
+                        </div>
+                    </div>
+
+                    <!-- Children & Guardianship -->
+                    <div class="review-card">
+                        <div class="review-card-header">
+                            <h5>Children & Guardianship <i class="lni lni-checkmark-circle review-completed-icon"></i></h5>
+                        </div>
+                        <div class="review-card-body">
+                            <p id="reviewChildren"></p>
+                        </div>
+                        <div class="review-card-footer">
+                            <button class="btn btn-outline-primary btn-sm" onclick="goToStep10()">Edit</button>
+                        </div>
+                    </div>
+
+                    <!-- Pets -->
+                    <div class="review-card">
+                        <div class="review-card-header">
+                            <h5>Pets <i class="lni lni-checkmark-circle review-completed-icon"></i></h5>
+                        </div>
+                        <div class="review-card-body">
+                            <p id="reviewPets"></p>
+                        </div>
+                        <div class="review-card-footer">
+                            <button class="btn btn-outline-primary btn-sm" onclick="goToStep11()">Edit</button>
+                        </div>
+                    </div>
+
+                    <!-- Digital Assets -->
+                    <div class="review-card">
+                        <div class="review-card-header">
+                            <h5>Digital Assets <i class="lni lni-checkmark-circle review-completed-icon"></i></h5>
+                        </div>
+                        <div class="review-card-body">
+                            <p id="reviewDigitalAssets"></p>
+                        </div>
+                        <div class="review-card-footer">
+                            <button class="btn btn-outline-primary btn-sm" onclick="goToStep12()">Edit</button>
+                        </div>
+                    </div>
+
+                    <!-- Funeral Wishes -->
+                    <div class="review-card">
+                        <div class="review-card-header">
+                            <h5>Funeral Wishes <i class="lni lni-checkmark-circle review-completed-icon"></i></h5>
+                        </div>
+                        <div class="review-card-body">
+                            <p id="reviewFuneral"></p>
+                        </div>
+                        <div class="review-card-footer">
+                            <button class="btn btn-outline-primary btn-sm" onclick="goToStep13()">Edit</button>
+                        </div>
+                    </div>
+
+                    <!-- Delivery Method -->
+                    <div class="review-card">
+                        <div class="review-card-header">
+                            <h5>Delivery Method <i class="lni lni-checkmark-circle review-completed-icon"></i></h5>
+                        </div>
+                        <div class="review-card-body">
+                            <p id="reviewDelivery"></p>
+                        </div>
+                        <div class="review-card-footer">
+                            <button class="btn btn-outline-primary btn-sm" onclick="goToStep14()">Edit</button>
+                        </div>
+                    </div>
+                    <!-- Will Review -->
+                    <div class="review-card">
+                        <div class="review-card-header">
+                            <h5>Your will is ready to be checked <i class="lni lni-checkmark-circle review-completed-icon"></i></h5>
+                        </div>
+                        <div class="review-card-body" style="padding-left: 20px;">
+                            <p><ul>
+                                <li>Pay securely</li>
+                                <li>We write your will based on your answers</li>
+                                <li id="deliveryDate">Receive your will via [Selected Delivery Method] by <strong>[Formatted Date]</strong></li>
+                            </ul></p>
+                        </div>
+                        <div class="review-card-footer">
+                            <form class="submit-will-form">
+                                <button type="submit" class="btn btn-primary btn-lg" onclick="submitWill()">Submit Will</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
