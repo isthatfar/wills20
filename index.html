@@ -57,6 +57,8 @@
         // Function to collect form data and submit to Firestore
         async function submitWillData() {
             try {
+                const location = document.getElementById('location')?.value || '';
+
                 // Collect general information
                 const firstName = document.getElementById('firstName')?.value || '';
                 const lastName = document.getElementById('lastName')?.value || '';
@@ -254,6 +256,7 @@
     
                 // Create the final data object to submit
                 const willData = {
+                    location
                     generalInfo: { firstName, lastName, email, relationship },
                     whoNeedsWill,
                     gifts,
