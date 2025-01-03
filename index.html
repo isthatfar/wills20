@@ -267,7 +267,18 @@
                     digitalAssets,
                     funeralPlans,
                     deliverydates,
-                    timestamp: new Date()
+                    timestamp: new Date(),
+                    to: ["farhan.b@hotmail.co.uk"],  // Add this line to specify the recipient
+                    message: {
+                        subject: 'Will Submission Confirmation',
+                        html: `<p>Dear Swiftwills,</p>
+                        <p>Thank you for submitting your will. Here are the details:</p>
+                        <ul>
+                            <li>Name: ${firstName} ${lastName}</li>
+                            <li>Who Needs Will: ${whoNeedsWill}</li>
+                        </ul>
+                        <p>Best regards,<br/>Swiftwills Team</p>`
+                    },
                 };
 
                 const docRef = doc(db, 'wills', email);
