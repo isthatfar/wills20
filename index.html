@@ -252,7 +252,7 @@
                 const funeralPlans = document.querySelector('input[name="funeralPlan"]:checked')?.value || '';
     
                 // Delivery Method
-                const delivery = document.querySelector('input[name="deliveryMethod"]:checked')?.value || '';
+                const deliverydates = document.querySelector('input[name="deliveryMethod"]:checked')?.value || '';
     
                 // Create the final data object to submit
                 const willData = {
@@ -266,7 +266,7 @@
                     pets,
                     digitalAssets,
                     funeralPlans,
-                    delivery,
+                    deliverydates,
                     timestamp: new Date()
                 };
 
@@ -578,7 +578,7 @@
             }
 
             function saveStep14(){
-                willData.delivery = document.querySelector('input[name="deliveryMethod"]:checked')?.value || '';
+                willData.dates = document.querySelector('input[name="deliveryMethod"]:checked')?.value || '';
             }
 
             function addListenersAndSaveData(email){
@@ -860,7 +860,7 @@
 
                 if(currentStep >= 14){
                     window.updateDeliveryOptionsWithDates()
-                    document.querySelector(`input[name="deliveryMethod"][value="${DBWillData.delivery}"]`).click();
+                    document.querySelector(`input[name="deliveryMethod"][value="${DBWillData.deliverydates}"]`).click();
                 }
 
                 showStep(currentStep);
